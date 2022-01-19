@@ -1,4 +1,9 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /*
     min priority queue implementation using binary heap.
@@ -7,6 +12,20 @@ import java.util.*;
 public class PriorityQueue<T extends Comparable<T>> {
     private List<T> heap = null;
     private Map<T, TreeSet<Integer>> map = new HashMap<>();
+
+    public PriorityQueue(T[] elements) {
+        int heapSize = elements.length;
+        heap = new ArrayList<T>(heapSize);
+
+        // Place all elements in the heap
+        for (int i = 0; i < heapSize; i++) {
+            mapAdd(elements[i], i);
+            heap.add(elements[i]);
+        }
+
+        for (int i = Math.max(0, (heapSize / 2) - 1); i >= 0; i--)
+            sink(i);
+    }
 
     public int size() {
         return heap.size();
@@ -36,7 +55,7 @@ public class PriorityQueue<T extends Comparable<T>> {
             return null;
 
         int indexOfLastElement = size() - 1;
-        T removedData = heap.get(indexOfLastElement);
+        T removedData = heap.get(index);
 
         // swap the index with the last element of heap
         swap(index, indexOfLastElement);
@@ -88,6 +107,18 @@ public class PriorityQueue<T extends Comparable<T>> {
         return null;
     }
 
+    public void mapAdd(T key, int value) {
+        if (map.containsKey(key)) {
+            TreeSet<Integer> set = map.get(key);
+            set.add(value);
+            map.put(key, set);
+        } else {
+            TreeSet<Integer> set = new TreeSet<>();
+            set.add(value);
+            map.put(key, set);
+        }
+    }
+
     public void sink(int i) {
         int heapSize = heap.size();
         while (true) {
@@ -99,7 +130,7 @@ public class PriorityQueue<T extends Comparable<T>> {
             if (rightIndex < heapSize && less(rightIndex, leftIndex))
                 smallest = rightIndex;
 
-            if (smallest >= heapSize || less(k, smallest))
+            if (smallest >= heapSize || less(i, smallest))
                 break;
             swap(i, smallest);
             i = smallest;
@@ -153,5 +184,13 @@ public class PriorityQueue<T extends Comparable<T>> {
 
         set1.add(val2Index);
         set2.add(val1Index);
+    }
+
+    public static void main(String[] args) {
+        Integer[] elements = new Integer[] { 5, 7, 8, 2, 9, 5, 3, 1 };
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>(elements);
+
+        System.out.println(minHeap.poll());
+        System.out.println(minHeap.peek());
     }
 }
