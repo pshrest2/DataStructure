@@ -92,6 +92,12 @@ public class HashTableSeperateChaining <K, V> implements Iterable<K>{
         return bucketInsertEntity(bucketIndex, entry);
     }
 
+    public V remove(K key){
+        if(key == null) return null;
+        int bucketIndex = normalizeIndex(key.hashCode());
+        return bucketRemoveEntry(bucketIndex, key);
+    }
+
     // Gets a key's values from the map and returns the value.
     // NOTE: returns null if the value is null AND also returns
     // null if the key does not exist
@@ -133,16 +139,35 @@ public class HashTableSeperateChaining <K, V> implements Iterable<K>{
         }
     }
 
+    public V bucketRemoveEntry(int bucketIndex, K key){
+        Entry<K, V> entry = bucketSeekEntry(bucketIndex, key);
+        if(entry == null) return null;
 
+        LinkedList<Entry<K, V>> bucket = table[bucketIndex];
+        bucket.remove(entry);
+        size--;
+        return entry.value;
+    }
 
     public void resizeTable(){
         capacity *= 2;
         threshold = (int) (capacity * maxLoadFactor);
+        LinkedList<Entry<K, V>>[] newTable = new LinkedList[capacity];
 
-        // lot to do
+        for(int i = 0; i < table.length; i++){
+            if(table[i] != null){
+                for(Entry<K, V> entry : table[i]){
+                    int bucketIndex = normalizeIndex(entry.hash);
+                    LinkedList<Entry<K, V>> bucket = newTable[bucketIndex];
+                    if(bucket == null) bucket = newTable[bucketIndex] = new LinkedList<>();
+                    bucket.add(entry);
+                }
+                table[i].clear();
+                table[i] = null;
+            }
+        }
+        table = newTable;
     }
-
-
 
     @Override
     public Iterator<K> iterator() {
